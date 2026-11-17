@@ -14,7 +14,7 @@ import { Chip } from '@/components/Chip';
 import { DECADES, OTHER_LANGUAGES } from '@/lib/filters';
 import type { Genre, OtherLanguage, RuntimeFilter, SortKey } from '@/model';
 import { useFiltersStore } from '@/store/filters';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, radii } from '@/theme';
 
 type Props = {
   visible: boolean;
@@ -314,8 +314,10 @@ const styles = StyleSheet.create({
   sheet: {
     maxHeight: '88%',
     backgroundColor: colors.bgElevated,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: radii.lg,
+    borderTopRightRadius: radii.lg,
+    borderTopWidth: 1,
+    borderColor: colors.line,
     paddingTop: 10,
   },
   handle: {
@@ -335,13 +337,13 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 26,
+    fontFamily: fonts.sansSemibold,
+    fontSize: 17,
   },
   reset: {
-    color: colors.accentBright,
-    fontFamily: fonts.sansSemibold,
-    fontSize: 15,
+    color: colors.link,
+    fontFamily: fonts.sans,
+    fontSize: 14,
   },
   scroll: {
     paddingHorizontal: 20,
@@ -352,10 +354,10 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sectionTitle: {
-    color: colors.textMuted,
-    fontFamily: fonts.sansSemibold,
-    fontSize: 13,
-    letterSpacing: 0.6,
+    color: colors.textFaint,
+    fontFamily: fonts.sansMedium,
+    fontSize: 12,
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   row: {
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 14,
+    borderRadius: radii.sm,
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: colors.text,
@@ -388,14 +390,16 @@ const styles = StyleSheet.create({
   done: {
     marginHorizontal: 20,
     marginTop: 8,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    paddingVertical: 14,
+    backgroundColor: colors.bg,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   doneText: {
     color: colors.text,
-    fontFamily: fonts.sansBold,
-    fontSize: 16,
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
   },
 });

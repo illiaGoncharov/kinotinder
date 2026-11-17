@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Poster } from '@/components/Poster';
 import { formatVote, releaseYear } from '@/lib/format';
 import type { Genre, MovieCard } from '@/model';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, radii } from '@/theme';
 
 type Props = {
   movie: MovieCard;
@@ -19,20 +19,20 @@ function genreLine(ids: number[], genres: Genre[]): string {
     names.push(genre.name);
     if (names.length === 3) break;
   }
-  return names.join('  ·  ');
+  return names.join(' · ');
 }
 
 export function MovieCardFace({ movie, genres }: Props) {
   const year = releaseYear(movie.releaseDate);
   const genresText = genreLine(movie.genreIds, genres);
-  const meta = [year, formatVote(movie.voteAverage)].filter((part) => part && part !== '—').join('  ·  ');
+  const meta = [year, formatVote(movie.voteAverage)].filter((part) => part && part !== '—').join(' · ');
 
   return (
     <View style={styles.card}>
       <Poster path={movie.posterPath} size="w780" style={styles.poster} label={movie.title} />
       <LinearGradient
-        colors={['transparent', 'rgba(20, 16, 36, 0.15)', 'rgba(12, 13, 18, 0.96)']}
-        locations={[0.32, 0.58, 1]}
+        colors={['transparent', 'rgba(13, 17, 23, 0.08)', 'rgba(13, 17, 23, 0.55)', 'rgba(13, 17, 23, 0.96)']}
+        locations={[0.35, 0.55, 0.78, 1]}
         style={styles.shade}
       />
       <View style={styles.copy}>
@@ -54,9 +54,9 @@ export function MovieCardFace({ movie, genres }: Props) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 28,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    backgroundColor: colors.indigoDeep,
+    backgroundColor: colors.posterFallback,
     borderWidth: 1,
     borderColor: colors.line,
   },
@@ -76,32 +76,33 @@ const styles = StyleSheet.create({
   },
   copy: {
     position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 18,
-    gap: 6,
+    left: 16,
+    right: 16,
+    bottom: 16,
+    gap: 4,
   },
   title: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 30,
-    lineHeight: 36,
+    fontFamily: fonts.title,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.2,
   },
   meta: {
-    color: colors.accentBright,
-    fontFamily: fonts.sansSemibold,
-    fontSize: 14,
-    letterSpacing: 0.4,
-  },
-  genres: {
-    color: colors.text,
-    fontFamily: fonts.sansMedium,
-    fontSize: 14,
-  },
-  overview: {
     color: colors.textMuted,
     fontFamily: fonts.sans,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+  },
+  genres: {
+    color: colors.textMuted,
+    fontFamily: fonts.sans,
+    fontSize: 13,
+  },
+  overview: {
+    color: colors.textFaint,
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 2,
   },
 });

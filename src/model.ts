@@ -1,4 +1,4 @@
-export type SwipeDirection = 'like' | 'nope';
+export type SwipeDirection = 'like' | 'nope' | 'seen' | 'later';
 
 /** Для будущей комнаты на двоих: сравниваются только id и направление. */
 export type Swipe = {

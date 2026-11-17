@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Attribution } from '@/components/Attribution';
 import { Frame, Message } from '@/components/Frame';
 import { Poster } from '@/components/Poster';
 import { usePerson } from '@/hooks/useCatalog';
@@ -58,7 +57,6 @@ export default function PersonScreen() {
                 <FilmList key={section.title} section={section} />
               ))
             )}
-            <Attribution />
           </View>
         ) : null}
       </ScrollView>
@@ -120,7 +118,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 128,
     borderRadius: 18,
-    backgroundColor: colors.indigo,
+    backgroundColor: colors.posterFallback,
   },
   headerCopy: {
     flex: 1,
@@ -128,12 +126,12 @@ const styles = StyleSheet.create({
   },
   name: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 28,
+    fontFamily: fonts.title,
+    fontSize: 22,
     lineHeight: 34,
   },
   known: {
-    color: colors.accentBright,
+    color: colors.textMuted,
     fontFamily: fonts.sansSemibold,
     fontSize: 14,
   },

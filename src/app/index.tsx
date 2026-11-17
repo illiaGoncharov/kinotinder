@@ -1,21 +1,19 @@
 import { router } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Attribution } from '@/components/Attribution';
 import { FilterSheet } from '@/components/FilterSheet';
 import { Frame, Message } from '@/components/Frame';
-import { SwipeDeck, type DeckHandle } from '@/components/SwipeDeck';
+import { SwipeDeck } from '@/components/SwipeDeck';
 import { useDeck } from '@/hooks/useDeck';
 import { filtersAreDefault } from '@/lib/filters';
 import type { MovieCard, SwipeDirection } from '@/model';
 import { useFiltersStore } from '@/store/filters';
 import { useSwipesStore } from '@/store/swipes';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, radii } from '@/theme';
 
 export default function DeckScreen() {
-  const deckRef = useRef<DeckHandle>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { movies, genres, status, hasMoreError, retry } = useDeck();
   const filters = useFiltersStore((state) => state.filters);
@@ -48,8 +46,13 @@ export default function DeckScreen() {
           <Text style={styles.brand} numberOfLines={1}>
             Кинотиндер
           </Text>
-          <Pressable onPress={() => router.push('/evening')} hitSlop={8}>
-            <Text style={styles.headerButton}>На вечер {likeCount > 0 ? likeCount : ''}</Text>
+          <Pressable onPress={() => router.push('/evening')} hitSlop={8} style={styles.headerRight}>
+            <Text style={styles.headerButton}>Вечер</Text>
+            {likeCount > 0 ? (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{likeCount}</Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
 
@@ -84,38 +87,28 @@ export default function DeckScreen() {
             </View>
           ) : null}
           {ready ? (
-            <SwipeDeck
-              ref={deckRef}
-              movies={movies}
-              genres={genres}
-              onSwipe={onSwipe}
-              onOpen={openMovie}
-            />
+            <SwipeDeck movies={movies} genres={genres} onSwipe={onSwipe} onOpen={openMovie} />
           ) : null}
         </View>
 
-        <View style={styles.actions}>
-          <Pressable
-            style={[styles.action, styles.nope, !ready && styles.disabled]}
-            disabled={!ready}
-            onPress={() => deckRef.current?.fling('nope')}
-            accessibilityLabel="Не нравится">
-            <Text style={styles.nopeText}>нет</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.action, styles.like, !ready && styles.disabled]}
-            disabled={!ready}
-            onPress={() => deckRef.current?.fling('like')}
-            accessibilityLabel="Нравится">
-            <Text style={styles.likeText}>да</Text>
-          </Pressable>
-        </View>
+        {ready ? (
+          <View style={styles.gestureLegend} pointerEvents="none">
+            <Text style={styles.legendMuted}>свайп:</Text>
+            <Text style={styles.legendItem}>👎 нет</Text>
+            <Text style={styles.legendDot}>·</Text>
+            <Text style={styles.legendItem}>📌 потом</Text>
+            <Text style={styles.legendDot}>·</Text>
+            <Text style={styles.legendItem}>❤️ да</Text>
+            <Text style={styles.legendDot}>·</Text>
+            <Text style={styles.legendItem}>👀 вверх</Text>
+          </View>
+        ) : null}
+
         {hasMoreError ? (
           <Pressable onPress={retry}>
             <Text style={styles.moreError}>Дальше не загрузилось. Нажми, чтобы повторить.</Text>
           </Pressable>
         ) : null}
-        <Attribution />
       </Frame>
       <FilterSheet visible={filtersOpen} genres={genres} onClose={() => setFiltersOpen(false)} />
     </SafeAreaView>
@@ -131,63 +124,79 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingBottom: 8,
-    minHeight: 42,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    minHeight: 44,
   },
   brand: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 18,
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
     flexShrink: 1,
+    letterSpacing: 0.15,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   headerButton: {
     color: colors.textMuted,
-    fontFamily: fonts.sansSemibold,
+    fontFamily: fonts.sans,
     fontSize: 14,
   },
   headerActive: {
-    color: colors.accentBright,
+    color: colors.link,
+    fontFamily: fonts.sansMedium,
+  },
+  badge: {
+    minWidth: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.bgElevated,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: colors.textMuted,
+    fontFamily: fonts.sansMedium,
+    fontSize: 12,
   },
   deck: {
     flex: 1,
   },
+  gestureLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+  },
+  legendMuted: {
+    color: colors.textFaint,
+    fontFamily: fonts.sans,
+    fontSize: 12,
+  },
+  legendItem: {
+    color: colors.textMuted,
+    fontFamily: fonts.sans,
+    fontSize: 12,
+  },
+  legendDot: {
+    color: colors.textFaint,
+    fontFamily: fonts.sans,
+    fontSize: 12,
+  },
   center: {
     flex: 1,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 18,
-    paddingVertical: 8,
-  },
-  action: {
-    minWidth: 108,
-    borderRadius: 999,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  nope: {
-    borderColor: colors.nope,
-    backgroundColor: '#171b24',
-  },
-  like: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accent,
-  },
-  disabled: {
-    opacity: 0.35,
-  },
-  nopeText: {
-    color: colors.nope,
-    fontFamily: fonts.sansBold,
-    fontSize: 16,
-  },
-  likeText: {
-    color: colors.text,
-    fontFamily: fonts.sansBold,
-    fontSize: 16,
   },
   retry: {
     alignSelf: 'center',
@@ -196,13 +205,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   retryText: {
-    color: colors.accentBright,
-    fontFamily: fonts.sansSemibold,
-    fontSize: 16,
+    color: colors.link,
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
   },
   moreError: {
     textAlign: 'center',
-    color: colors.accentBright,
+    color: colors.textMuted,
     fontFamily: fonts.sans,
     fontSize: 13,
     paddingHorizontal: 20,

@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Attribution } from '@/components/Attribution';
 import { Frame, Message } from '@/components/Frame';
 import { Poster } from '@/components/Poster';
 import { filmsCount, formatVote, releaseYear } from '@/lib/format';
@@ -52,7 +51,6 @@ export default function EveningScreen() {
           ))}
         </ScrollView>
       )}
-      <Attribution />
     </Frame>
   );
 }
@@ -99,11 +97,11 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 34,
+    fontFamily: fonts.sansSemibold,
+    fontSize: 22,
   },
   count: {
-    color: colors.accentBright,
+    color: colors.textMuted,
     fontFamily: fonts.sansSemibold,
     fontSize: 14,
   },

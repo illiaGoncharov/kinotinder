@@ -5,7 +5,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   GestureDetector,
   useExclusiveGestures,
@@ -24,8 +24,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { MovieCardFace } from '@/components/MovieCardFace';
+import { SwipeHints } from '@/components/SwipeHints';
 import type { Genre, MovieCard, SwipeDirection } from '@/model';
-import { colors, fonts } from '@/theme';
+import { colors, radii } from '@/theme';
 
 export type DeckHandle = {
   fling: (direction: SwipeDirection) => void;
@@ -50,7 +51,9 @@ type CardProps = {
 };
 
 const SWIPE_X = 120;
+const SWIPE_Y = 100;
 const FLY_X = 560;
+const FLY_Y = 520;
 
 export const SwipeDeck = forwardRef<DeckHandle, DeckProps>(function SwipeDeck(
   { movies, genres, onSwipe, onOpen },
@@ -122,12 +125,24 @@ const SwipeCard = forwardRef<CardHandle, CardProps>(function SwipeCard(
       'worklet';
       if (locked.value === 1) return;
       locked.value = 1;
+      if (direction === 'seen') {
+        translateY.value = withTiming(-FLY_Y, { duration: 200 }, (finished) => {
+          if (finished) runOnJS(commit)(direction);
+        });
+        return;
+      }
+      if (direction === 'later') {
+        translateY.value = withTiming(FLY_Y, { duration: 200 }, (finished) => {
+          if (finished) runOnJS(commit)(direction);
+        });
+        return;
+      }
       const sign = direction === 'like' ? 1 : -1;
       translateX.value = withTiming(sign * FLY_X, { duration: 200 }, (finished) => {
         if (finished) runOnJS(commit)(direction);
       });
     },
-    [commit, locked, translateX],
+    [commit, locked, translateX, translateY],
   );
 
   const settleBack = useCallback(() => {
@@ -150,16 +165,19 @@ const SwipeCard = forwardRef<CardHandle, CardProps>(function SwipeCard(
     useMemo(
       () => ({
         activeOffsetX: [-10, 10] as [number, number],
+        activeOffsetY: [-12, 12] as [number, number],
         onUpdate: (event: { translationX: number; translationY: number }) => {
           'worklet';
           if (locked.value === 1) return;
           translateX.value = event.translationX;
-          translateY.value = event.translationY * 0.12;
+          translateY.value = event.translationY;
         },
         onDeactivate: (event: {
           canceled: boolean;
           translationX: number;
+          translationY: number;
           velocityX: number;
+          velocityY: number;
         }) => {
           'worklet';
           if (locked.value === 1) return;
@@ -167,13 +185,22 @@ const SwipeCard = forwardRef<CardHandle, CardProps>(function SwipeCard(
             settleBack();
             return;
           }
+          const seen =
+            event.translationY < -SWIPE_Y ||
+            (event.translationY < -48 && event.velocityY < -900);
+          const later =
+            event.translationY > SWIPE_Y ||
+            (event.translationY > 48 && event.velocityY > 900);
           const like =
             event.translationX > SWIPE_X ||
             (event.translationX > 40 && event.velocityX > 900);
           const nope =
             event.translationX < -SWIPE_X ||
             (event.translationX < -40 && event.velocityX < -900);
-          if (like) flyOff('like');
+          const vertical = Math.abs(event.translationY) >= Math.abs(event.translationX);
+          if (seen && vertical) flyOff('seen');
+          else if (later && vertical) flyOff('later');
+          else if (like) flyOff('like');
           else if (nope) flyOff('nope');
           else settleBack();
         },
@@ -207,32 +234,42 @@ const SwipeCard = forwardRef<CardHandle, CardProps>(function SwipeCard(
     ],
   }));
 
-  const likeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [24, 110], [0, 1], Extrapolation.CLAMP),
-  }));
-
-  const nopeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [-24, -110], [0, 1], Extrapolation.CLAMP),
-  }));
-
-  const washStyle = useAnimatedStyle(() => ({
-    backgroundColor: translateX.value >= 0 ? colors.likeWash : colors.nopeWash,
-    opacity: interpolate(Math.abs(translateX.value), [0, 140], [0, 0.85], Extrapolation.CLAMP),
-  }));
+  const washStyle = useAnimatedStyle(() => {
+    const tx = translateX.value;
+    const ty = translateY.value;
+    const up = -ty;
+    const down = ty;
+    if (up > down && up > Math.abs(tx) && up > 8) {
+      return {
+        backgroundColor: colors.seenWash,
+        opacity: interpolate(up, [0, 120], [0, 0.75], Extrapolation.CLAMP),
+      };
+    }
+    if (down > up && down > Math.abs(tx) && down > 8) {
+      return {
+        backgroundColor: colors.laterWash,
+        opacity: interpolate(down, [0, 120], [0, 0.7], Extrapolation.CLAMP),
+      };
+    }
+    return {
+      backgroundColor: tx >= 0 ? colors.likeWash : colors.nopeWash,
+      opacity: interpolate(Math.abs(tx), [0, 140], [0, 0.85], Extrapolation.CLAMP),
+    };
+  });
 
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.front, cardStyle]}>
-        <MovieCardFace movie={movie} genres={genres} />
-        <Animated.View pointerEvents="none" style={[styles.wash, washStyle]} />
-        <Animated.View pointerEvents="none" style={[styles.stamp, styles.likeStamp, likeStyle]}>
-          <Text style={[styles.stampText, styles.likeText]}>ДА</Text>
+    <View style={styles.slot} collapsable={false}>
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.front, cardStyle]}>
+          <View style={styles.cardBody} collapsable={false}>
+            <MovieCardFace movie={movie} genres={genres} />
+            <Animated.View pointerEvents="none" style={[styles.wash, washStyle]} />
+          </View>
         </Animated.View>
-        <Animated.View pointerEvents="none" style={[styles.stamp, styles.nopeStamp, nopeStyle]}>
-          <Text style={[styles.stampText, styles.nopeText]}>НЕТ</Text>
-        </Animated.View>
-      </Animated.View>
-    </GestureDetector>
+      </GestureDetector>
+      {/* Подсказки на слоте колоды — карточка уезжает, плашки остаются на месте */}
+      <SwipeHints translateX={translateX} translateY={translateY} />
+    </View>
   );
 });
 
@@ -248,16 +285,19 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    transform: [{ scale: 0.96 }, { translateY: 14 }],
-    opacity: 0.85,
+    transform: [{ scale: 0.98 }, { translateY: 8 }],
+    opacity: 0.92,
+  },
+  slot: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 2,
   },
   front: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 2,
+    ...StyleSheet.absoluteFill,
+  },
+  cardBody: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 1,
   },
   wash: {
     position: 'absolute',
@@ -265,35 +305,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    borderRadius: 28,
-  },
-  stamp: {
-    position: 'absolute',
-    top: 28,
-    borderWidth: 3,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  likeStamp: {
-    left: 22,
-    borderColor: colors.accentBright,
-    transform: [{ rotate: '-14deg' }],
-  },
-  nopeStamp: {
-    right: 22,
-    borderColor: colors.nope,
-    transform: [{ rotate: '14deg' }],
-  },
-  stampText: {
-    fontFamily: fonts.sansBold,
-    fontSize: 28,
-    letterSpacing: 2,
-  },
-  likeText: {
-    color: colors.accentBright,
-  },
-  nopeText: {
-    color: colors.nope,
+    borderRadius: radii.card,
   },
 });

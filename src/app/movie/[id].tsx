@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Attribution } from '@/components/Attribution';
 import { Frame, Message } from '@/components/Frame';
 import { Poster } from '@/components/Poster';
 import { useMovie } from '@/hooks/useCatalog';
@@ -79,7 +78,6 @@ export default function MovieScreen() {
             <People title="Сценарий" people={movie.writers} />
             <People title="Музыка" people={movie.composers} />
             <People title="Продюсеры" people={movie.producers} />
-            <Attribution />
           </View>
         ) : null}
       </ScrollView>
@@ -137,7 +135,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     height: 280,
-    backgroundColor: colors.indigoDeep,
+    backgroundColor: colors.posterFallback,
   },
   heroImage: {
     width: '100%',
@@ -171,18 +169,18 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontFamily: fonts.display,
-    fontSize: 32,
+    fontFamily: fonts.title,
+    fontSize: 24,
     lineHeight: 38,
   },
   meta: {
-    color: colors.accentBright,
-    fontFamily: fonts.sansSemibold,
+    color: colors.textMuted,
+    fontFamily: fonts.sans,
     fontSize: 14,
   },
   genres: {
-    color: colors.text,
-    fontFamily: fonts.sansMedium,
+    color: colors.textMuted,
+    fontFamily: fonts.sans,
     fontSize: 15,
   },
   overview: {
@@ -202,15 +200,16 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 6,
     borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderColor: colors.line,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.bgElevated,
   },
   trailerText: {
-    color: colors.accentBright,
-    fontFamily: fonts.sansBold,
-    fontSize: 15,
+    color: colors.link,
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
   },
   block: {
     marginTop: 18,

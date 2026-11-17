@@ -10,8 +10,14 @@ export const defaultFilters: Filters = {
   language: 'any',
   otherLanguage: 'fr',
   certification: null,
-  sort: 'popularity.desc',
+  sort: 'vote_average.desc',
 };
+
+const DISCOVER_SORT_ROTATION: Filters['sort'][] = [
+  'vote_average.desc',
+  'primary_release_date.desc',
+  'popularity.desc',
+];
 
 export const DECADES = [
   { label: '2020-е', from: 2020, to: 2029 },
@@ -64,9 +70,16 @@ export function discoverParams(
   filters: Filters,
   page: number,
 ): Record<string, string | number | boolean> {
+  // На дефолтной сортировке меняем её по страницам — иначе вечно одни «Мстители» и мультфильмы.
+  const sortBy =
+    filters.sort === defaultFilters.sort
+      ? (DISCOVER_SORT_ROTATION[(page - 1) % DISCOVER_SORT_ROTATION.length] ??
+        defaultFilters.sort)
+      : filters.sort;
+
   const params: Record<string, string | number | boolean> = {
     page,
-    sort_by: filters.sort,
+    sort_by: sortBy,
     include_adult: false,
     'vote_average.gte': filters.minVote,
     'vote_count.gte': filters.minVoteCount,

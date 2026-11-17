@@ -9,7 +9,7 @@ type SwipesState = {
   /** Снимок карточки, чтобы «на вечер» открывался без нового запроса. */
   cards: Record<number, MovieCard>;
   swipe: (movie: MovieCard, direction: SwipeDirection) => void;
-  /** Убираем из вечера, но оставляем просмотренным — в колоду он не вернётся. */
+  /** Убираем из вечера и помечаем «уже видел» — в колоду не вернётся. */
   removeFromEvening: (movieId: number) => void;
 };
 
@@ -31,7 +31,7 @@ export const useSwipesStore = create<SwipesState>()(
         set((state) => ({
           swipes: state.swipes.map((item) =>
             item.movieId === movieId && item.direction === 'like'
-              ? { ...item, direction: 'nope' as const }
+              ? { ...item, direction: 'seen' as const }
               : item,
           ),
         })),

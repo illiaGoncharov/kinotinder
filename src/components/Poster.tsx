@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { StyleSheet, Text, View, type ImageStyle, type StyleProp } from 'react-native';
 
 import { posterUrl } from '@/lib/format';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, radii } from '@/theme';
 
 type Props = {
   path: string | null;
@@ -27,13 +27,14 @@ export function Poster({ path, size = 'w500', style, label }: Props) {
 
 const styles = StyleSheet.create({
   fallback: {
-    backgroundColor: colors.indigo,
+    backgroundColor: colors.posterFallback,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radii.sm,
   },
   letter: {
-    color: colors.textMuted,
-    fontFamily: fonts.display,
-    fontSize: 28,
+    color: colors.textFaint,
+    fontFamily: fonts.sansMedium,
+    fontSize: 20,
   },
 });

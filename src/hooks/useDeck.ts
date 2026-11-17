@@ -35,7 +35,7 @@ export function useDeck() {
 
   const likeIds = swipes
     .filter((swipe) => swipe.direction === 'like')
-    .slice(-2)
+    .slice(-1)
     .map((swipe) => swipe.movieId);
   const mixRecommendations = canMixRecommendations(filters);
 
@@ -63,6 +63,16 @@ export function useDeck() {
     return ids;
   }, [swipes, cards]);
 
+  const nopedGenreIds = useMemo(() => {
+    const ids: number[] = [];
+    for (const swipe of swipes) {
+      if (swipe.direction !== 'nope') continue;
+      const card = cards[swipe.movieId];
+      if (card) ids.push(...card.genreIds);
+    }
+    return ids;
+  }, [swipes, cards]);
+
   const discoverMoviesFlat = useMemo(
     () => discover.data?.pages.flatMap((page) => page.movies) ?? [],
     [discover.data],
@@ -80,9 +90,10 @@ export function useDeck() {
         recommendations,
         swipedIds,
         likedGenreIds,
+        nopedGenreIds,
         filters,
       }),
-    [discoverMoviesFlat, recommendations, swipedIds, likedGenreIds, filters],
+    [discoverMoviesFlat, recommendations, swipedIds, likedGenreIds, nopedGenreIds, filters],
   );
 
   useEffect(() => {
